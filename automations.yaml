@@ -1,0 +1,29 @@
+- id: '1667935594434'
+  alias: 01 - Lock Logging
+  description: ''
+  trigger:
+  - platform: event
+    event_type: keymaster_lock_state_changed
+    event_data:
+      state: unlocked
+    variables:
+      sn: |-
+        {%- if trigger.event.data.code_slot_name == "" -%}
+          Manual
+        {%- else -%}
+          {{ trigger.event.data.code_slot_name }}
+        {%- endif -%}
+      verb: |-
+        {%- if trigger.event.data.code_slot_name == "" -%}
+          unlock of
+        {%- else -%}
+          unlocked
+        {%- endif -%}
+  condition: []
+  action:
+  - service: logbook.log
+    data:
+      name: "{{ trigger.event.data.lockname }}"
+      entity_id: "{{ trigger.event.data.entity_id }}"
+      message: "{{ sn }} {{ verb }} the {{ trigger.event.data.lockname }}"
+  mode: single
