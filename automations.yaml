@@ -7,23 +7,60 @@
     event_data:
       state: unlocked
     variables:
-      sn: |-
-        {%- if trigger.event.data.code_slot_name == "" -%}
-          Manual
-        {%- else -%}
-          {{ trigger.event.data.code_slot_name }}
-        {%- endif -%}
-      verb: |-
-        {%- if trigger.event.data.code_slot_name == "" -%}
-          unlock of
-        {%- else -%}
-          unlocked
-        {%- endif -%}
+      sn: "{%- if trigger.event.data.code_slot_name == \"\" -%}\n  Manual\n{%- else
+        -%}\n  {{ trigger.event.data.code_slot_name }}\n{%- endif -%}"
+      verb: "{%- if trigger.event.data.code_slot_name == \"\" -%}\n  unlock of\n{%-
+        else -%}\n  unlocked\n{%- endif -%}"
   condition: []
   action:
   - service: logbook.log
     data:
-      name: "{{ trigger.event.data.lockname }}"
-      entity_id: "{{ trigger.event.data.entity_id }}"
-      message: "{{ sn }} {{ verb }} the {{ trigger.event.data.lockname }}"
+      name: '{{ trigger.event.data.lockname }}'
+      entity_id: '{{ trigger.event.data.entity_id }}'
+      message: '{{ sn }} {{ verb }} the {{ trigger.event.data.lockname }}'
+  mode: single
+- id: '1669752279062'
+  alias: Upstairs Bath Humidity Fan On
+  description: ''
+  trigger:
+  - type: humidity
+    platform: device
+    device_id: 6f8c59c23ca8ccbbc9daafb869ce8634
+    entity_id: sensor.4_in_1_sensor_humidity
+    domain: sensor
+    above: 55
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 89beaa54fc4d4b3bcf5c486285e6d70a
+    entity_id: switch.z_wave_plus_700_series_on_off_switch_2
+    domain: switch
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.upstairs_bath_fan_auto
+  mode: single
+- id: '1669752452638'
+  alias: Upstairs Bath Humidity Fan Off
+  description: ''
+  trigger:
+  - type: humidity
+    platform: device
+    device_id: 6f8c59c23ca8ccbbc9daafb869ce8634
+    entity_id: sensor.4_in_1_sensor_humidity
+    domain: sensor
+    below: 50
+  condition:
+  - condition: state
+    entity_id: input_boolean.upstairs_bath_fan_auto
+    state: 'on'
+  action:
+  - type: turn_off
+    device_id: 89beaa54fc4d4b3bcf5c486285e6d70a
+    entity_id: switch.z_wave_plus_700_series_on_off_switch_2
+    domain: switch
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.upstairs_bath_fan_auto
   mode: single
