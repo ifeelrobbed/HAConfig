@@ -91,7 +91,7 @@
     domain: switch
   mode: single
 - id: '1670514295590'
-  alias: Upstairs Bathroom Light Off - Time
+  alias: Upstairs Bathroom Light Off - Open Door
   description: ''
   trigger:
   - type: opened
@@ -111,13 +111,31 @@
       minutes: 0
       seconds: 10
       milliseconds: 0
+  - service: timer.cancel
+    data: {}
+    target:
+      entity_id: timer.upstairs_bathroom_light_timer
   - type: turn_off
     device_id: 0a1faa1fdd0076f289dc08ef4872af56
     entity_id: switch.z_wave_plus_700_series_on_off_switch
     domain: switch
   mode: single
-- id: '1670702847925'
-  alias: Upstairs Bathroom Light Off - 25 min
+- id: '1671289220672'
+  alias: Tag Office Desk is scanned
+  description: ''
+  trigger:
+  - platform: tag
+    tag_id: 2f7b0f63-68e0-4dc1-8b30-7dc0bea8899e
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 753645fa137551dd5fd879ce68076ec0
+    entity_id: light.z_wave_plus_700_series_dimmer_switch
+    domain: light
+    brightness_pct: 40
+  mode: single
+- id: '1671304036359'
+  alias: Upstairs Bathroom Light Timer - Light On
   description: ''
   trigger:
   - platform: device
@@ -127,13 +145,70 @@
     domain: switch
   condition: []
   action:
-  - delay:
-      hours: 0
-      minutes: 25
-      seconds: 0
-      milliseconds: 0
+  - if:
+    - type: is_not_open
+      condition: device
+      device_id: f192fba261a43fd1aeb34932dd88d8c7
+      entity_id: binary_sensor.open_close_xs_sensor_window_door_is_open
+      domain: binary_sensor
+    then:
+    - service: timer.pause
+      data: {}
+      target:
+        entity_id: timer.upstairs_bathroom_light_timer
+    else:
+    - service: timer.start
+      data: {}
+      target:
+        entity_id: timer.upstairs_bathroom_light_timer
+  mode: single
+- id: '1671304471870'
+  alias: Upstairs Bathroom Light Timer Finished
+  description: ''
+  trigger:
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.upstairs_bathroom_light_timer
+  condition: []
+  action:
   - type: turn_off
     device_id: 0a1faa1fdd0076f289dc08ef4872af56
     entity_id: switch.z_wave_plus_700_series_on_off_switch
     domain: switch
+  mode: single
+- id: '1671304829027'
+  alias: Upstairs Bath Timer Pause
+  description: ''
+  trigger:
+  - type: not_opened
+    platform: device
+    device_id: f192fba261a43fd1aeb34932dd88d8c7
+    entity_id: binary_sensor.open_close_xs_sensor_window_door_is_open
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: timer.pause
+    data: {}
+    target:
+      entity_id: timer.upstairs_bathroom_light_timer
+  mode: single
+- id: '1671410819497'
+  alias: 'Upstairs Bath Cancel Timer '
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_off
+    device_id: 0a1faa1fdd0076f289dc08ef4872af56
+    entity_id: switch.z_wave_plus_700_series_on_off_switch
+    domain: switch
+  condition:
+  - condition: state
+    entity_id: timer.upstairs_bathroom_light_timer
+    state: active
+  action:
+  - service: timer.cancel
+    data: {}
+    target:
+      entity_id: timer.upstairs_bathroom_light_timer
   mode: single
